@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cartoon Network Player</title>
+  <style>
+    body {margin:0;padding:0;background:linear-gradient(135deg,#000 40%,#111 100%);font-family:"Comic Sans MS",sans-serif;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow-x:hidden;}
+    header {display:flex;align-items:center;gap:10px;background:#fff;color:#000;width:100%;padding:10px 20px;box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+    header img {height:50px;border-radius:5px;}
+    header h1 {font-size:28px;font-weight:bold;}
+    .player-container {background:#222;padding:20px;border-radius:20px;width:720px;box-shadow:0 0 25px rgba(255,255,255,0.2);text-align:center;}
+    video {width:100%;border-radius:15px;border:5px solid #fff;box-shadow:0 0 15px #000;}
+    .controls {margin-top:10px;}
+    button {background:#fff;color:#000;border:none;border-radius:10px;padding:10px 20px;margin:5px;font-size:16px;font-weight:bold;cursor:pointer;}
+    button:hover {background:#ffcc00;color:#000;}
+    .playlist {margin-top:20px;display:flex;justify-content:center;flex-wrap:wrap;gap:15px;}
+    .thumb {background:#fff;border-radius:10px;overflow:hidden;width:140px;cursor:pointer;border:3px solid transparent;}
+    .thumb:hover {transform:scale(1.1);border-color:#ffcc00;}
+    .thumb img {width:100%;height:80px;object-fit:cover;}
+    .thumb p {margin:5px;color:#000;font-weight:bold;}
+    footer {margin-top:30px;font-size:14px;color:#aaa;}
+    #fileInput {display:none;}
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/80/Cartoon_Network_2010_logo.svg" alt="CN Logo">
+    <h1>Cartoon Network Player</h1>
+  </header>
+
+  <div class="player-container">
+    <video id="videoPlayer" controls>Your browser does not support HTML5 video.</video>
+    <div class="controls">
+      <button onclick="playVideo()">▶ Play</button>
+      <button onclick="pauseVideo()">⏸ Pause</button>
+      <button onclick="restartVideo()">⏮ Restart</button>
+      <button onclick="uploadVideo()">📂 Upload Video</button>
+      <input type="file" id="fileInput" accept="video/*">
+    </div>
+    <div class="playlist" id="playlist"></div>
+  </div>
+
+  <footer>© 2025 Cartoon Network Fan Player — for personal/local use only</footer>
+
+  <script>
+    const video=document.getElementById('videoPlayer');
+    const fileInput=document.getElementById('fileInput');
+    const playlist=document.getElementById('playlist');
+    function playVideo(){video.play();}
+    function pauseVideo(){video.pause();}
+    function restartVideo(){video.currentTime=0;video.play();}
+    function uploadVideo(){fileInput.click();}
+    fileInput.addEventListener('change',function(){
+      const file=this.files[0];
+      if(file){
+        const videoURL=URL.createObjectURL(file);
+        video.src=videoURL;
+        video.play();
+        const tempVideo=document.createElement('video');
+        tempVideo.src=videoURL;
+        tempVideo.muted=true;
+        tempVideo.playsInline=true;
+        tempVideo.currentTime=0.1;
+        tempVideo.addEventListener('loadeddata',()=>{
+          const canvas=document.createElement('canvas');
+          canvas.width=140;canvas.height=80;
+          const ctx=canvas.getContext('2d');
+          ctx.drawImage(tempVideo,0,0,140,80);
+          const imgSrc=canvas.toDataURL();
+          const thumb=document.createElement('div');
+          thumb.classList.add('thumb');
+          const img=document.createElement('img');
+          img.src=imgSrc;img.alt=file.name;
+          const label=document.createElement('p');
+          label.textContent=file.name;
+          thumb.appendChild(img);thumb.appendChild(label);
+          thumb.onclick=()=>{video.src=videoURL;video.play();};
+          playlist.prepend(thumb);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
