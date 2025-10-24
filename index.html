@@ -1,85 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cartoon Network Player</title>
-  <style>
-    body {margin:0;padding:0;background:linear-gradient(135deg,#000 40%,#111 100%);font-family:"Comic Sans MS",sans-serif;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow-x:hidden;}
-    header {display:flex;align-items:center;gap:10px;background:#fff;color:#000;width:100%;padding:10px 20px;box-shadow:0 4px 10px rgba(0,0,0,0.3);}
-    header img {height:50px;border-radius:5px;}
-    header h1 {font-size:28px;font-weight:bold;}
-    .player-container {background:#222;padding:20px;border-radius:20px;width:720px;box-shadow:0 0 25px rgba(255,255,255,0.2);text-align:center;}
-    video {width:100%;border-radius:15px;border:5px solid #fff;box-shadow:0 0 15px #000;}
-    .controls {margin-top:10px;}
-    button {background:#fff;color:#000;border:none;border-radius:10px;padding:10px 20px;margin:5px;font-size:16px;font-weight:bold;cursor:pointer;}
-    button:hover {background:#ffcc00;color:#000;}
-    .playlist {margin-top:20px;display:flex;justify-content:center;flex-wrap:wrap;gap:15px;}
-    .thumb {background:#fff;border-radius:10px;overflow:hidden;width:140px;cursor:pointer;border:3px solid transparent;}
-    .thumb:hover {transform:scale(1.1);border-color:#ffcc00;}
-    .thumb img {width:100%;height:80px;object-fit:cover;}
-    .thumb p {margin:5px;color:#000;font-weight:bold;}
-    footer {margin-top:30px;font-size:14px;color:#aaa;}
-    #fileInput {display:none;}
-  </style>
+<meta charset="UTF-8">
+<title>CN Player with Folder Backgrounds & Music</title>
+<style>
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    color: white;
+    text-align: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    transition: background-image 0.5s ease;
+}
+h1 { margin-top: 20px; }
+button, select, input[type="file"], input[type="text"] { margin: 5px; padding: 5px 15px; cursor: pointer; }
+
+#playlist { list-style: none; padding: 0; margin-top: 20px; }
+.folder, .video-item { background: rgba(0,0,0,0.5); margin: 5px; padding: 5px; border-radius: 5px; text-align: left; }
+.folder-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.folder-videos { margin-left: 20px; display: none; }
+
+video { max-width: 80%; margin-top: 20px; border: 3px solid white; border-radius: 10px; }
+
+h2 { margin-top: 30px; }
+</style>
 </head>
 <body>
-  <header>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/80/Cartoon_Network_2010_logo.svg" alt="CN Logo">
-    <h1>Cartoon Network Player</h1>
-  </header>
 
-  <div class="player-container">
-    <video id="videoPlayer" controls>Your browser does not support HTML5 video.</video>
-    <div class="controls">
-      <button onclick="playVideo()">▶ Play</button>
-      <button onclick="pauseVideo()">⏸ Pause</button>
-      <button onclick="restartVideo()">⏮ Restart</button>
-      <button onclick="uploadVideo()">📂 Upload Video</button>
-      <input type="file" id="fileInput" accept="video/*">
-    </div>
-    <div class="playlist" id="playlist"></div>
-  </div>
+<h1>🎬 CN Player with Folder Backgrounds & Music</h1>
 
-  <footer>© 2025 Cartoon Network Fan Player — for personal/local use only</footer>
+<video id="videoPlayer" controls></video>
+<br>
 
-  <script>
-    const video=document.getElementById('videoPlayer');
-    const fileInput=document.getElementById('fileInput');
-    const playlist=document.getElementById('playlist');
-    function playVideo(){video.play();}
-    function pauseVideo(){video.pause();}
-    function restartVideo(){video.currentTime=0;video.play();}
-    function uploadVideo(){fileInput.click();}
-    fileInput.addEventListener('change',function(){
-      const file=this.files[0];
-      if(file){
-        const videoURL=URL.createObjectURL(file);
-        video.src=videoURL;
-        video.play();
-        const tempVideo=document.createElement('video');
-        tempVideo.src=videoURL;
-        tempVideo.muted=true;
-        tempVideo.playsInline=true;
-        tempVideo.currentTime=0.1;
-        tempVideo.addEventListener('loadeddata',()=>{
-          const canvas=document.createElement('canvas');
-          canvas.width=140;canvas.height=80;
-          const ctx=canvas.getContext('2d');
-          ctx.drawImage(tempVideo,0,0,140,80);
-          const imgSrc=canvas.toDataURL();
-          const thumb=document.createElement('div');
-          thumb.classList.add('thumb');
-          const img=document.createElement('img');
-          img.src=imgSrc;img.alt=file.name;
-          const label=document.createElement('p');
-          label.textContent=file.name;
-          thumb.appendChild(img);thumb.appendChild(label);
-          thumb.onclick=()=>{video.src=videoURL;video.play();};
-          playlist.prepend(thumb);
-        });
-      }
+<input type="text" id="folderName" placeholder="New Folder Name">
+<button id="createFolder">Create Folder</button>
+<br>
+
+<select id="folderSelect">
+    <option value="">-- Select Folder to Add Video --</option>
+</select>
+<input type="file" id="uploadVideo" accept="video/*">
+<input type="file" id="uploadFolderBg" accept="image/*">
+
+<h2>🎵 Folder Music</h2>
+<select id="trackSelect">
+    <option value="">-- Select Track --</option>
+    <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">Track 1</option>
+    <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3">Track 2</option>
+</select>
+<input type="file" id="uploadMusic" accept="audio/*">
+<button id="playMusic">Play</button>
+<button id="pauseMusic">Pause</button>
+<button id="muteMusic">Mute</button>
+
+<ul id="playlist"></ul>
+
+<script>
+// ---------- DATA ----------
+let folders = JSON.parse(localStorage.getItem('cnFolders') || '[]');
+const playlistEl = document.getElementById('playlist');
+const videoPlayer = document.getElementById('videoPlayer');
+const folderSelect = document.getElementById('folderSelect');
+const body = document.body;
+
+// ---------- MUSIC ----------
+const audio = new Audio();
+audio.loop = true;
+let isMuted = false;
+
+document.getElementById('playMusic').onclick = () => audio.play();
+document.getElementById('pauseMusic').onclick = () => audio.pause();
+document.getElementById('muteMusic').onclick = () => {
+    isMuted = !isMuted;
+    audio.muted = isMuted;
+    document.getElementById('muteMusic').textContent = isMuted ? "Unmute" : "Mute";
+};
+
+// ---------- FUNCTIONS ----------
+function saveFolders() {
+    localStorage.setItem('cnFolders', JSON.stringify(folders));
+    renderFolderSelect();
+}
+
+function renderFolderSelect() {
+    folderSelect.innerHTML = '<option value="">-- Select Folder to Add Video --</option>';
+    folders.forEach((folder, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = folder.name;
+        folderSelect.appendChild(option);
     });
-  </script>
+}
+
+function renderPlaylist() {
+    playlistEl.innerHTML = '';
+    folders.forEach((folder, folderIndex) => {
+        const folderLi = document.createElement('li');
+        folderLi.className = 'folder';
+
+        const header = document.createElement('div');
+        header.className = 'folder-header';
+        header.textContent = folder.name;
+
+        // Toggle videos
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = 'Expand';
+        header.appendChild(toggleBtn);
+
+        // Delete folder
+        const deleteFolderBtn = document.createElement('button');
+        deleteFolderBtn.textContent = 'Delete Folder';
+        deleteFolderBtn.onclick = (e) => {
+            e.stopPropagation();
+            folders.splice(folderIndex,1);
+            saveFolders();
+            renderPlaylist();
+            body.style.backgroundImage = ''; // reset background
+        };
+        header.appendChild(deleteFolderBtn);
+
+        // Folder music button
+        const folderMusicBtn = document.createElement('button');
+        folderMusicBtn.textContent = 'Play Folder Music';
+        folderMusicBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (folder.music) {
+                audio.src = folder.music;
+                audio.play();
+            }
+        };
+        header.appendChild(folderMusicBtn);
+
+        folderLi.appendChild(header);
+
+        const videosUl = document.createElement('ul');
+        videosUl.className = 'folder-videos';
+
+        folder.videos.forEach((video, videoIndex) => {
+            const videoLi = document.createElement('li');
+            videoLi.className = 'video-item';
+            videoLi.textContent = video.name;
+
+            // Play video on click
+            videoLi.onclick = () => {
+                videoPlayer.src = video.url;
+                videoPlayer.play();
+                // Change background if folder has one
+                if (folder.background) body.style.backgroundImage = `url('${folder.background}')`;
+            };
+
+            // Delete video
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'Delete';
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
+                folder.videos.splice(videoIndex,1);
+                saveFolders();
+                renderPlaylist();
+            };
+            videoLi.appendChild(delBtn);
+
+            videosUl.appendChild(videoLi);
+        });
+
+        folderLi.appendChild(videosUl);
+
+        // Toggle expand/collapse
+        toggleBtn.onclick = () => {
+            const isVisible = videosUl.style.display === 'block';
+            videosUl.style.display = isVisible ? 'none' : 'block';
+            toggleBtn.textContent = isVisible ? 'Expand' : 'Collapse';
+        };
+
+        playlistEl.appendChild(folderLi);
+    });
+}
+
+// ---------- CREATE FOLDER ----------
+document.getElementById('createFolder').onclick = () => {
+    const nameInput = document.getElementById('folderName');
+    const name = nameInput.value.trim();
+    if (!name) return alert("Folder name required!");
+    folders.push({name, videos: [], background: '', music: ''});
+    saveFolders();
+    renderPlaylist();
+    nameInput.value = '';
+};
+
+// ---------- UPLOAD VIDEO ----------
+document.getElementById('uploadVideo').onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const selectedFolderIndex = folderSelect.value;
+    if (selectedFolderIndex === '') return alert("Please select a folder to add the video!");
+
+    const url = URL.createObjectURL(file);
+    folders[selectedFolderIndex].videos.push({name: file.name, url});
+    saveFolders();
+    renderPlaylist();
+};
+
+// ---------- UPLOAD FOLDER BACKGROUND ----------
+document.getElementById('uploadFolderBg').onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const selectedFolderIndex = folderSelect.value;
+    if (selectedFolderIndex === '') return alert("Select a folder first!");
+
+    const url = URL.createObjectURL(file);
+    folders[selectedFolderIndex].background = url;
+    saveFolders();
+    alert("Background image set for folder!");
+};
+
+// ---------- UPLOAD FOLDER MUSIC ----------
+document.getElementById('uploadMusic').onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const selectedFolderIndex = folderSelect.value;
+    if (selectedFolderIndex === '') return alert("Select a folder first!");
+
+    const url = URL.createObjectURL(file);
+    folders[selectedFolderIndex].music = url;
+    saveFolders();
+    alert("Folder music set!");
+};
+
+// ---------- INITIALIZE ----------
+renderFolderSelect();
+renderPlaylist();
+</script>
+
 </body>
 </html>
