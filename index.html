@@ -2,237 +2,393 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>CN Player with Folder Backgrounds & Music</title>
+<title>Cartoon Network Player</title>
 <style>
 body {
-    font-family: sans-serif;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
     margin: 0;
     padding: 0;
-    color: white;
     text-align: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-    transition: background-image 0.5s ease;
+    background-color: black;
+    color: white;
+    overflow-x: hidden;
+    position: relative;
 }
-h1 { margin-top: 20px; }
-button, select, input[type="file"], input[type="text"] { margin: 5px; padding: 5px 15px; cursor: pointer; }
 
-#playlist { list-style: none; padding: 0; margin-top: 20px; }
-.folder, .video-item { background: rgba(0,0,0,0.5); margin: 5px; padding: 5px; border-radius: 5px; text-align: left; }
-.folder-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-.folder-videos { margin-left: 20px; display: none; }
+/* --- Top Banner --- */
+.banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+.banner .left { display: flex; align-items: center; }
+.banner img { height: 40px; margin-right: 15px; }
+.banner h1 { font-size: 20px; margin:0; color:black; }
+#settingsToggle {
+    background-color: #ffcc00;
+    border: 2px solid #000;
+    border-radius: 10px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #fff;
+    box-shadow: 2px 2px 0 #000;
+    transition: all 0.2s ease;
+}
+#settingsToggle:hover { background-color: orange; }
 
-video { max-width: 80%; margin-top: 20px; border: 3px solid white; border-radius: 10px; }
+/* --- Frosted Gray Container --- */
+.container {
+    position: relative;
+    z-index: 2;
+    background: rgba(100,100,100,0.85);
+    backdrop-filter: blur(10px);
+    padding: 40px 30px 30px 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(255,255,255,0.2);
+    width: 90%;
+    max-width: 1000px;
+    margin: 100px auto 50px auto;
+    text-align: center;
+}
 
-h2 { margin-top: 30px; }
+/* --- Floating bubbles --- */
+.bubble {
+    position: absolute;
+    bottom: -50px;
+    border-radius: 50%;
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 1;
+    animation-name: rise;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+}
+@keyframes rise {
+    0% { transform: translateX(0) translateY(0); opacity: 0.7; }
+    100% { transform: translateX(50px) translateY(-110vh); opacity: 0; }
+}
+
+/* Logo */
+#logo { width: 180px; margin: 15px auto; display: block; }
+
+/* Video */
+video { max-width: 80%; border: 4px solid #fff; border-radius: 12px; margin-top: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.7); }
+
+/* --- Cartoony Buttons --- */
+button, .file-btn {
+    display: inline-block;
+    background-color: #ffcc00;
+    color: black;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 25px;
+    margin: 5px;
+    border-radius: 15px;
+    border: 3px solid black;
+    cursor: pointer;
+    text-shadow: 1px 1px 0 white;
+    box-shadow: 3px 3px 0 #000;
+    transition: all 0.2s ease;
+}
+button:hover, .file-btn:hover {
+    background-color: orange;
+    transform: scale(1.05);
+    box-shadow: 4px 4px 0 #000;
+}
+button.delete {
+    background-color: #ff4c4c;
+    color: #fff;
+    border-radius: 50%;
+    width: 25px; height: 25px; padding:0; font-size:16px; line-height:20px;
+}
+button.delete:hover { background-color:#ff1a1a; transform:scale(1.1); }
+
+/* Playlist */
+#playlist { list-style: none; padding: 0; margin: 20px auto; max-width: 600px; }
+.folder, .video-item, .standalone-video {
+    background: rgba(0,0,0,0.7);
+    margin: 6px 0;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+    transition: transform 0.1s, background 0.2s;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.folder:hover, .video-item:hover, .standalone-video:hover { background: rgba(50,50,50,0.8); transform: scale(1.02); }
+.folder-header { cursor:pointer; width:100%; display:flex; justify-content:space-between; align-items:center; }
+.folder-videos { margin-left:20px; display:none; width:100%; }
+
+/* --- File Inputs at Bottom (Standalone videos) --- */
+.file-inputs {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.file-inputs input[type="file"] { display: none; }
+.file-inputs label { margin: 8px 0; }
+
+/* Video Control Buttons */
+#videoControls { margin-top: 10px; }
+
+/* Folder Add Video Button */
+.folder-add-video { margin:5px 0; }
+
+/* Settings Panel */
+#settingsPanel {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    background: rgba(200,200,200,0.95);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.4);
+    z-index: 10;
+    display: none;
+}
+#settingsPanel h3, #settingsPanel h4 { margin:5px 0; }
+#settingsPanel label { display:block; margin:5px 0; font-size:14px; }
 </style>
 </head>
 <body>
 
-<h1>🎬 CN Player with Folder Backgrounds & Music</h1>
+<!-- Top Banner -->
+<div class="banner">
+  <div class="left">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Cartoon_Network_2010_logo.svg" alt="Cartoon Network Logo">
+    <h1>Cartoon Network Player</h1>
+  </div>
+  <button id="settingsToggle">⚙️ Settings</button>
+</div>
 
-<video id="videoPlayer" controls></video>
-<br>
+<!-- Frosted UI Container -->
+<div class="container">
+  <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/6/66/Cartoon_Network_2010_logo.svg" alt="Cartoon Network">
 
-<input type="text" id="folderName" placeholder="New Folder Name">
-<button id="createFolder">Create Folder</button>
-<br>
+  <!-- Video Player -->
+  <video id="videoPlayer" controls></video>
 
-<select id="folderSelect">
-    <option value="">-- Select Folder to Add Video --</option>
-</select>
-<input type="file" id="uploadVideo" accept="video/*">
-<input type="file" id="uploadFolderBg" accept="image/*">
+  <!-- Video Control Buttons -->
+  <div id="videoControls">
+      <button id="playBtn">Play ▶️</button>
+      <button id="pauseBtn">Pause ⏸️</button>
+      <button id="restartBtn">Restart 🔄</button>
+      <button id="stopBtn">Stop ⏹️</button>
+  </div>
 
-<h2>🎵 Folder Music</h2>
-<select id="trackSelect">
-    <option value="">-- Select Track --</option>
-    <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">Track 1</option>
-    <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3">Track 2</option>
-</select>
-<input type="file" id="uploadMusic" accept="audio/*">
-<button id="playMusic">Play</button>
-<button id="pauseMusic">Pause</button>
-<button id="muteMusic">Mute</button>
+  <!-- Add Folder Button -->
+  <button id="createFolder">Add Folder 📁</button>
+  <br>
 
-<ul id="playlist"></ul>
+  <!-- Playlist -->
+  <ul id="playlist"></ul>
+
+  <!-- File Inputs at Bottom (Standalone videos only) -->
+  <div class="file-inputs">
+      <label class="file-btn" for="uploadVideo">Upload Video (Standalone)</label>
+      <input type="file" id="uploadVideo" accept="video/*">
+  </div>
+</div>
+
+<!-- Settings Panel -->
+<div id="settingsPanel">
+  <h3>Settings</h3>
+  <label>Background Color: <input type="color" id="bgColorPicker" value="#000000"></label>
+  <label>Container Color: <input type="color" id="containerColorPicker" value="#646464"></label>
+  <label>Button Color: <input type="color" id="buttonColorPicker" value="#ffcc00"></label>
+  <h4>Bubble Settings</h4>
+  <label>Bubble Colors</label>
+  <input type="color" class="bubble-color" value="#FFA500">
+  <input type="color" class="bubble-color" value="#FF8C00">
+  <input type="color" class="bubble-color" value="#FFB347">
+  <input type="color" class="bubble-color" value="#FF7F50">
+  <input type="color" class="bubble-color" value="#FFD580">
+  <label>Bubble Amount: <input type="number" id="bubbleAmount" value="3" min="1" max="20"></label>
+  <label>Bubble Speed (seconds, lower = faster): <input type="number" id="bubbleSpeed" value="7" min="2" max="20"></label>
+  <label><input type="checkbox" id="toggleBubbles" checked> Show Bubbles</label>
+  <h4>Folder Media</h4>
+  <label class="file-btn" for="uploadFolderBg">Upload Folder Background</label>
+  <input type="file" id="uploadFolderBg" accept="image/*">
+  <label class="file-btn" for="uploadMusic">Upload Folder Music</label>
+  <input type="file" id="uploadMusic" accept="audio/*">
+  <h4>Display Mode</h4>
+  <label><input type="checkbox" id="legacyToggle"> Enable Legacy Mode</label>
+</div>
 
 <script>
-// ---------- DATA ----------
-let folders = JSON.parse(localStorage.getItem('cnFolders') || '[]');
-const playlistEl = document.getElementById('playlist');
-const videoPlayer = document.getElementById('videoPlayer');
-const folderSelect = document.getElementById('folderSelect');
-const body = document.body;
+// --- Floating Bubbles ---
+let bubbleShades = ["#FFA500","#FF8C00","#FFB347","#FF7F50","#FFD580"];
+let bubbleInterval, bubbleAmount = 3, bubbleSpeed = 7;
 
-// ---------- MUSIC ----------
-const audio = new Audio();
-audio.loop = true;
-let isMuted = false;
-
-document.getElementById('playMusic').onclick = () => audio.play();
-document.getElementById('pauseMusic').onclick = () => audio.pause();
-document.getElementById('muteMusic').onclick = () => {
-    isMuted = !isMuted;
-    audio.muted = isMuted;
-    document.getElementById('muteMusic').textContent = isMuted ? "Unmute" : "Mute";
-};
-
-// ---------- FUNCTIONS ----------
-function saveFolders() {
-    localStorage.setItem('cnFolders', JSON.stringify(folders));
-    renderFolderSelect();
+function createBubble() {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    const size = Math.random() * 40 + 20;
+    bubble.style.width = size + 'px';
+    bubble.style.height = size + 'px';
+    bubble.style.left = Math.random() * window.innerWidth + 'px';
+    bubble.style.backgroundColor = bubbleShades[Math.floor(Math.random() * bubbleShades.length)];
+    bubble.style.animationDuration = (Math.random() * 3 + bubbleSpeed) + 's';
+    document.body.appendChild(bubble);
+    bubble.addEventListener('animationend', () => bubble.remove());
 }
 
-function renderFolderSelect() {
-    folderSelect.innerHTML = '<option value="">-- Select Folder to Add Video --</option>';
-    folders.forEach((folder, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = folder.name;
-        folderSelect.appendChild(option);
-    });
+function startBubbles() { 
+    if(!bubbleInterval) bubbleInterval = setInterval(()=>{ for(let i=0;i<bubbleAmount;i++) createBubble(); }, 300); 
+}
+function stopBubbles() { 
+    clearInterval(bubbleInterval); 
+    bubbleInterval = null; 
+    document.querySelectorAll('.bubble').forEach(b => b.remove());
+}
+startBubbles();
+
+function updateBubbleColors() {
+    bubbleShades = Array.from(document.querySelectorAll('.bubble-color')).map(input => input.value);
+}
+document.querySelectorAll('.bubble-color').forEach(input => input.addEventListener('input', updateBubbleColors));
+updateBubbleColors();
+document.getElementById('bubbleAmount').oninput = e => { bubbleAmount = parseInt(e.target.value) || 3; }
+document.getElementById('bubbleSpeed').oninput = e => { bubbleSpeed = parseFloat(e.target.value) || 7; }
+
+// --- Data & Video ---
+let folders = JSON.parse(localStorage.getItem('cnFolders') || '[]');
+let standaloneVideos = JSON.parse(localStorage.getItem('cnStandalone') || '[]');
+const playlistEl = document.getElementById('playlist');
+const videoPlayer = document.getElementById('videoPlayer');
+const container = document.querySelector('.container');
+const body = document.body;
+const audio = new Audio(); audio.loop = true;
+
+// --- Video Controls ---
+document.getElementById('playBtn').onclick = () => videoPlayer.play();
+document.getElementById('pauseBtn').onclick = () => videoPlayer.pause();
+document.getElementById('restartBtn').onclick = () => { videoPlayer.currentTime=0; videoPlayer.play(); }
+document.getElementById('stopBtn').onclick = () => { videoPlayer.pause(); videoPlayer.currentTime=0; }
+
+// --- Playlist & Folder ---
+function saveData() {
+    localStorage.setItem('cnFolders', JSON.stringify(folders));
+    localStorage.setItem('cnStandalone', JSON.stringify(standaloneVideos));
 }
 
 function renderPlaylist() {
-    playlistEl.innerHTML = '';
-    folders.forEach((folder, folderIndex) => {
-        const folderLi = document.createElement('li');
-        folderLi.className = 'folder';
-
-        const header = document.createElement('div');
-        header.className = 'folder-header';
-        header.textContent = folder.name;
-
-        // Toggle videos
-        const toggleBtn = document.createElement('button');
-        toggleBtn.textContent = 'Expand';
-        header.appendChild(toggleBtn);
-
-        // Delete folder
-        const deleteFolderBtn = document.createElement('button');
-        deleteFolderBtn.textContent = 'Delete Folder';
-        deleteFolderBtn.onclick = (e) => {
-            e.stopPropagation();
-            folders.splice(folderIndex,1);
-            saveFolders();
-            renderPlaylist();
-            body.style.backgroundImage = ''; // reset background
+    playlistEl.innerHTML='';
+    standaloneVideos.forEach((video,index)=>{
+        const li=document.createElement('li');
+        li.className='standalone-video';
+        li.textContent=video.name;
+        li.onclick=()=>{
+            videoPlayer.src=video.url;
+            videoPlayer.play();
+            if(video.background) body.style.backgroundImage=`url('${video.background}')`;
+            if(video.music){ audio.src=video.music; audio.play();}
         };
-        header.appendChild(deleteFolderBtn);
+        const delBtn=document.createElement('button'); delBtn.className='delete'; delBtn.textContent='✖';
+        delBtn.onclick=(e)=>{ e.stopPropagation(); standaloneVideos.splice(index,1); saveData(); renderPlaylist();}
+        li.appendChild(delBtn);
+        playlistEl.appendChild(li);
+    });
 
-        // Folder music button
-        const folderMusicBtn = document.createElement('button');
-        folderMusicBtn.textContent = 'Play Folder Music';
-        folderMusicBtn.onclick = (e) => {
-            e.stopPropagation();
-            if (folder.music) {
-                audio.src = folder.music;
-                audio.play();
-            }
-        };
-        header.appendChild(folderMusicBtn);
+    folders.forEach((folder,index)=>{
+        const folderLi=document.createElement('li'); folderLi.className='folder';
+        const header=document.createElement('div'); header.className='folder-header'; header.textContent=folder.name;
+        const delFolderBtn=document.createElement('button'); delFolderBtn.className='delete'; delFolderBtn.textContent='✖';
+        delFolderBtn.onclick=(e)=>{ e.stopPropagation(); folders.splice(index,1); saveData(); renderPlaylist(); body.style.backgroundImage=''; }
+        header.appendChild(delFolderBtn); folderLi.appendChild(header);
 
-        folderLi.appendChild(header);
-
-        const videosUl = document.createElement('ul');
-        videosUl.className = 'folder-videos';
-
-        folder.videos.forEach((video, videoIndex) => {
-            const videoLi = document.createElement('li');
-            videoLi.className = 'video-item';
-            videoLi.textContent = video.name;
-
-            // Play video on click
-            videoLi.onclick = () => {
-                videoPlayer.src = video.url;
-                videoPlayer.play();
-                // Change background if folder has one
-                if (folder.background) body.style.backgroundImage = `url('${folder.background}')`;
-            };
-
-            // Delete video
-            const delBtn = document.createElement('button');
-            delBtn.textContent = 'Delete';
-            delBtn.onclick = (e) => {
-                e.stopPropagation();
-                folder.videos.splice(videoIndex,1);
-                saveFolders();
-                renderPlaylist();
-            };
-            videoLi.appendChild(delBtn);
-
-            videosUl.appendChild(videoLi);
+        const videosUl=document.createElement('ul'); videosUl.className='folder-videos';
+        folder.videos.forEach((video,vidIndex)=>{
+            const videoLi=document.createElement('li'); videoLi.className='video-item'; videoLi.textContent=video.name;
+            videoLi.onclick=()=>{ videoPlayer.src=video.url; videoPlayer.play(); if(folder.background) body.style.backgroundImage=`url('${folder.background}')`; if(folder.music){ audio.src=folder.music; audio.play();} }
+            const delBtn=document.createElement('button'); delBtn.className='delete'; delBtn.textContent='✖';
+            delBtn.onclick=(e)=>{ e.stopPropagation(); folder.videos.splice(vidIndex,1); saveData(); renderPlaylist(); }
+            videoLi.appendChild(delBtn); videosUl.appendChild(videoLi);
         });
 
-        folderLi.appendChild(videosUl);
-
-        // Toggle expand/collapse
-        toggleBtn.onclick = () => {
-            const isVisible = videosUl.style.display === 'block';
-            videosUl.style.display = isVisible ? 'none' : 'block';
-            toggleBtn.textContent = isVisible ? 'Expand' : 'Collapse';
+        const addVideoBtn=document.createElement('button'); addVideoBtn.className='folder-add-video'; addVideoBtn.textContent='Add Video to Folder ➕';
+        addVideoBtn.onclick=(e)=>{ e.stopPropagation();
+            const fileInput=document.createElement('input'); fileInput.type='file'; fileInput.accept='video/*';
+            fileInput.onchange=(event)=>{ const file=event.target.files[0]; if(file){ folder.videos.push({name:file.name,url:URL.createObjectURL(file)}); saveData(); renderPlaylist(); } };
+            fileInput.click();
         };
-
+        videosUl.appendChild(addVideoBtn); folderLi.appendChild(videosUl);
+        header.onclick=()=>{ const isVisible=videosUl.style.display==='block'; videosUl.style.display=isVisible?'none':'block'; if(folder.background && !isVisible) body.style.backgroundImage=`url('${folder.background}')`; }
         playlistEl.appendChild(folderLi);
     });
 }
 
-// ---------- CREATE FOLDER ----------
-document.getElementById('createFolder').onclick = () => {
-    const nameInput = document.getElementById('folderName');
-    const name = nameInput.value.trim();
-    if (!name) return alert("Folder name required!");
-    folders.push({name, videos: [], background: '', music: ''});
-    saveFolders();
-    renderPlaylist();
-    nameInput.value = '';
+// --- Add Folder ---
+document.getElementById('createFolder').onclick=()=>{
+    const name=prompt("Enter Folder Name:");
+    if(!name) return;
+    folders.push({name,videos:[],background:'',music:''});
+    saveData(); renderPlaylist();
 };
 
-// ---------- UPLOAD VIDEO ----------
-document.getElementById('uploadVideo').onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const selectedFolderIndex = folderSelect.value;
-    if (selectedFolderIndex === '') return alert("Please select a folder to add the video!");
-
-    const url = URL.createObjectURL(file);
-    folders[selectedFolderIndex].videos.push({name: file.name, url});
-    saveFolders();
-    renderPlaylist();
+// --- File Inputs ---
+document.getElementById('uploadVideo').onchange=(e)=>{
+    const file=e.target.files[0]; if(!file) return;
+    standaloneVideos.push({name:file.name,url:URL.createObjectURL(file)});
+    saveData(); renderPlaylist();
+};
+document.getElementById('uploadFolderBg').onchange=(e)=>{
+    const file=e.target.files[0]; if(!file) return;
+    const folderIndex=prompt("Enter folder index to set background (0 = first folder):"); const i=parseInt(folderIndex);
+    if(isNaN(i) || !folders[i]) return alert("Invalid folder!");
+    folders[i].background=URL.createObjectURL(file); saveData(); alert("Background set!");
+};
+document.getElementById('uploadMusic').onchange=(e)=>{
+    const file=e.target.files[0]; if(!file) return;
+    const folderIndex=prompt("Enter folder index to set music (0 = first folder):"); const i=parseInt(folderIndex);
+    if(isNaN(i) || !folders[i]) return alert("Invalid folder!");
+    folders[i].music=URL.createObjectURL(file); saveData(); alert("Music set!");
 };
 
-// ---------- UPLOAD FOLDER BACKGROUND ----------
-document.getElementById('uploadFolderBg').onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const selectedFolderIndex = folderSelect.value;
-    if (selectedFolderIndex === '') return alert("Select a folder first!");
+// --- Settings Panel ---
+const settingsPanel=document.getElementById('settingsPanel');
+document.getElementById('settingsToggle').onclick=()=>{ settingsPanel.style.display = settingsPanel.style.display==='block'?'none':'block'; }
+document.getElementById('bgColorPicker').oninput=(e)=>{ body.style.backgroundColor=e.target.value; }
+document.getElementById('containerColorPicker').oninput=(e)=>{ container.style.backgroundColor=e.target.value; }
+document.getElementById('buttonColorPicker').oninput=(e)=>{ document.querySelectorAll('button, .file-btn').forEach(btn=>btn.style.backgroundColor=e.target.value); }
+document.getElementById('toggleBubbles').onchange=(e)=>{ if(e.target.checked) startBubbles(); else stopBubbles(); }
 
-    const url = URL.createObjectURL(file);
-    folders[selectedFolderIndex].background = url;
-    saveFolders();
-    alert("Background image set for folder!");
-};
+// --- Legacy Mode ---
+const legacyToggle = document.getElementById('legacyToggle');
+if(localStorage.getItem('legacyMode') === 'true') { legacyToggle.checked = true; enableLegacyMode(); }
+legacyToggle.onchange = () => { legacyToggle.checked? enableLegacyMode(): disableLegacyMode(); localStorage.setItem('legacyMode', legacyToggle.checked); }
 
-// ---------- UPLOAD FOLDER MUSIC ----------
-document.getElementById('uploadMusic').onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const selectedFolderIndex = folderSelect.value;
-    if (selectedFolderIndex === '') return alert("Select a folder first!");
+function enableLegacyMode() {
+    body.style.backgroundColor="#FF6F00"; 
+    container.style.background="none"; container.style.backdropFilter="none";
+    document.querySelectorAll('button, .file-btn').forEach(btn => btn.style.borderRadius="5px");
+    document.querySelectorAll('.bubble').forEach(b => b.style.bottom="0");
+}
+function disableLegacyMode() {
+    body.style.backgroundColor=document.getElementById('bgColorPicker').value;
+    container.style.background="rgba(100,100,100,0.85)";
+    container.style.backdropFilter="blur(10px)";
+    document.querySelectorAll('button, .file-btn').forEach(btn => btn.style.borderRadius="15px");
+    document.querySelectorAll('.bubble').forEach(b => b.style.bottom="-50px");
+}
 
-    const url = URL.createObjectURL(file);
-    folders[selectedFolderIndex].music = url;
-    saveFolders();
-    alert("Folder music set!");
-};
-
-// ---------- INITIALIZE ----------
-renderFolderSelect();
+// --- Initialize ---
 renderPlaylist();
 </script>
-
 </body>
 </html>
